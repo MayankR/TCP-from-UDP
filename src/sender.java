@@ -35,9 +35,10 @@ public class sender {
 
 		int w_send = 0;
 	
-        while(Seq != flow){
+        while(Seq <= flow){
 			w_send += W;
 			int w_send_copy = w_send;
+            System.out.println("W: " + W + " Seq: " + Seq);
 			while(w_send > 0)
 			{
 				sequ = zero12.substring(0,12-(Seq+"").length())+Seq;
@@ -50,6 +51,7 @@ public class sender {
 				sendData = sentence.getBytes();
 				int sendSizeByte = sendData.length;
 
+                System.out.println("Sending in while: " + Seq + " size: " + packetSize);
 				DatagramPacket sendPacket = new DatagramPacket(sendData, sendSizeByte, ipAddress, Integer.parseInt(port));
 				clientSocket.send(sendPacket);
 				
@@ -65,7 +67,7 @@ public class sender {
             try {
                 clientSocket.receive(receivePacket);
                 String rec = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                System.out.println(rec);
+                System.out.println("Recvd ACK: " + rec);
                 ACK = Integer.parseInt(rec);
                 if(ACK <= Seq - w_send_copy)
                 {
