@@ -39,11 +39,12 @@ public class sender {
 	
         while(true){
 			int w_send_copy = W;
-			if(Seq <= flow)
+			if(Seq < flow)
 			{
 				w_send += W;
-				w_send = Math.min(w_send, flow - Seq + 1);
+				w_send = Math.min(w_send, flow - Seq);
 				w_send_copy = w_send;
+                System.out.println("W: " + W + "; Seq: " + Seq + "; Total senging: " + w_send);
 				while(w_send > 0)
 				{
 					sequ = zero12.substring(0,12-(Seq+"").length())+Seq;
@@ -56,6 +57,7 @@ public class sender {
 					sendData = sentence.getBytes();
 					int sendSizeByte = sendData.length;
 
+                    System.out.println("Sending in while: " + Seq + " size: " + packetSize);
 					DatagramPacket sendPacket = new DatagramPacket(sendData, sendSizeByte, ipAddress, Integer.parseInt(port));
 					clientSocket.send(sendPacket);
 					
@@ -71,16 +73,15 @@ public class sender {
             try {
                 clientSocket.receive(receivePacket);
                 String rec = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                System.out.println(rec);
+                System.out.println("Recvd ACK: " + rec);
                 ACK = Integer.parseInt(rec);
                 
                 if(ACK == flow)
 					break;
                 
                 
-				last_ACK = ACK;
-                
-                if(ACK <= Seq - w_send_copy)
+				
+                if(ACK == last_ACK)
                 {
 					Seq = ACK;
 					W = MSS;
@@ -88,9 +89,12 @@ public class sender {
 				else //if(ACK > Seq - W)
                 {
 					w_send = ACK - Seq;
+                    System.out.println(w_send + " " + ACK + " " + Seq + " " + w_send_copy);
 					tmp = W;
 					W+= (MSS*MSS)/tmp;
 				}
+				last_ACK = ACK;
+                
             } catch (SocketTimeoutException e) {
                 // time expired
                 Seq = last_ACK;
