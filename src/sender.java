@@ -87,7 +87,7 @@ public class sender {
 				}
 				else //if(ACK > Seq - W)
                 {
-					w_send = ACK - (Seq - w_send_copy) - 1;
+					w_send = ACK - Seq;
 					tmp = W;
 					W+= (MSS*MSS)/tmp;
 				}
