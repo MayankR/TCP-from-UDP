@@ -20,12 +20,17 @@ public class receiver {
         int rSeq = 0;
         int ack = 0;
 
+        int count = 0;
         while(true) {
+            count++;
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             serverSocket.receive(receivePacket);
 
             String rec = new String(receivePacket.getData());
-            // System.out.println(rec);
+            // System.out.print(rec.substring(0, 24) + "  ");
+            // System.out.print("count: "  + count + " ");
+
+            System.out.println("Received data: " + rec);
 
             rSeq = Integer.parseInt(rec.substring(0,12));           //Packet seq number -> start bit
 
