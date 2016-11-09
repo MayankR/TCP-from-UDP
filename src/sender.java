@@ -35,12 +35,15 @@ public class sender {
 
 		int w_send = 0;
 	
+		int last_ACK = 0;
+	
         while(true){
+			int w_send_copy = W;
 			if(Seq <= flow)
 			{
 				w_send += W;
-				w_send = min(w_send, flow - Seq + 1);
-				int w_send_copy = w_send;
+				w_send = Math.min(w_send, flow - Seq + 1);
+				w_send_copy = w_send;
 				while(w_send > 0)
 				{
 					sequ = zero12.substring(0,12-(Seq+"").length())+Seq;
@@ -61,8 +64,8 @@ public class sender {
 					w_send -= packetSize ;	//todo
 					Seq += packetSize;		//todo
 				}
-				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			}
+			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			w_send = 0;
 
             try {
@@ -73,6 +76,9 @@ public class sender {
                 
                 if(ACK == flow)
 					break;
+                
+                
+				last_ACK = ACK;
                 
                 if(ACK <= Seq - w_send_copy)
                 {
@@ -87,7 +93,7 @@ public class sender {
 				}
             } catch (SocketTimeoutException e) {
                 // time expired
-                Seq -= w_send_copy;
+                Seq = last_ACK;
                 
                 W = MSS;
             }
