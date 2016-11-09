@@ -25,7 +25,7 @@ public class receiver {
             serverSocket.receive(receivePacket);
 
             String rec = new String(receivePacket.getData());
-            System.out.println(rec);
+            // System.out.println(rec);
 
             rSeq = Integer.parseInt(rec.substring(0,12));           //Packet seq number -> start bit
 
@@ -35,7 +35,7 @@ public class receiver {
                 ack = nextSeq;
             }
 
-            System.out.println(ack+"");
+            System.out.println("sending ACK: " + ack+"");
 
             InetAddress IPAddress = receivePacket.getAddress();
             int port = receivePacket.getPort();
