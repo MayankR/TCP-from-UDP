@@ -33,36 +33,56 @@ public class sender {
         InetAddress ipAddress = InetAddress.getByName(args[0]);
         String port = args[1];
 
-        while(flow>0){
+		int w_send = 0;
+	
+        while(Seq != flow){
+			w_send += W;
+			int w_send_copy = w_send;
+			while(w_send > 0)
+			{
+				sequ = zero12.substring(0,12-(Seq+"").length())+Seq;
+				
+				packetSize = Math.min(MSS, w_send);
+				
+				PS = zero12.substring(0,12-(packetSize+"").length())+packetSize;
+				sentence = sequ+PS+by1000.substring(0,1000);
+			
+				sendData = sentence.getBytes();
+				int sendSizeByte = sendData.length;
 
-            sequ = zero12.substring(0,12-(Seq+"").length())+Seq;
-            //System.out.println("seq: "+sequ);
-
-            PS = zero12.substring(0,12-(packetSize+"").length())+packetSize;
-            sentence = sequ+PS+by1000.substring(0,1000);
-            //System.out.println(sentence.substring(0,24)+"");
-
-            sendData = sentence.getBytes();
-            int sendSizeByte = sendData.length;
-
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendSizeByte, ipAddress, Integer.parseInt(port));
-            clientSocket.send(sendPacket);
-
+				DatagramPacket sendPacket = new DatagramPacket(sendData, sendSizeByte, ipAddress, Integer.parseInt(port));
+				clientSocket.send(sendPacket);
+				
+				
+				
+				w_send -= packetSize ;	//todo
+				Seq += packetSize;		//todo
+			}
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+
+			w_send = 0;
 
             try {
                 clientSocket.receive(receivePacket);
                 String rec = new String(receivePacket.getData(), 0, receivePacket.getLength());
                 System.out.println(rec);
                 ACK = Integer.parseInt(rec);
-                Seq+= ACK;
-                flow-=ACK;
-                tmp = W;
-                W+= (MSS*MSS)/tmp;
+                if(ACK <= Seq - w_send_copy)
+                {
+					Seq = ACK;
+					W = MSS;
+				}
+				else //if(ACK > Seq - W)
+                {
+					w_send = ACK - (Seq - w_send_copy) - 1;
+					tmp = W;
+					W+= (MSS*MSS)/tmp;
+				}
             } catch (SocketTimeoutException e) {
                 // time expired
-                W=MSS;
-                continue;
+                Seq -= w_send_copy;
+                
+                W = MSS;
             }
 
         }
