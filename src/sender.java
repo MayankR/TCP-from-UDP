@@ -13,7 +13,7 @@ public class sender {
     public static void main(String args[]) throws Exception {
 
         clientSocket = new DatagramSocket();
-        clientSocket.setSoTimeout(1000);//1s timeout
+        clientSocket.setSoTimeout(1);//1s timeout
 
         int Seq = 0;String sequ = "";String zero12 = "000000000000";
         int MSS = 1000;
@@ -30,9 +30,20 @@ public class sender {
         for(int i=0;i<1000;i++)
             by1000+="a";
 
-        InetAddress ipAddress = InetAddress.getByName(args[0]);
-        String port = args[1];
+		InetAddress ipAddress = InetAddress.getByName(args[0]);
+		String port = args[1];
+		
+		boolean loss = false;
 
+		if(args.length>2)
+		{
+			if(args[1].equal("1"))
+			{
+				loss = true;
+			}
+			InetAddress ipAddress = InetAddress.getByName(args[2]);
+			String port = args[3];
+		}
 		int w_send = 0;
 	
 		int last_ACK = 0;
@@ -59,9 +70,11 @@ public class sender {
 
                     System.out.println("Sending in while: " + Seq + " size: " + packetSize);
 					DatagramPacket sendPacket = new DatagramPacket(sendData, sendSizeByte, ipAddress, Integer.parseInt(port));
-					clientSocket.send(sendPacket);
 					
-					
+					if(loss && Math.random()>0.05)
+					{
+						clientSocket.send(sendPacket);
+					}
 					
 					w_send -= packetSize ;	//todo
 					Seq += packetSize;		//todo
@@ -70,38 +83,90 @@ public class sender {
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			w_send = 0;
 
-            try {
-                clientSocket.receive(receivePacket);
-                String rec = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                System.out.println("Recvd ACK: " + rec);
-                ACK = Integer.parseInt(rec);
-                
-                if(ACK == flow)
-					break;
-                
-                
+			
+			clientSocket.setSoTimeout(1000);//1s timeout
+			
+			try {
+				clientSocket.receive(receivePacket);
+				String rec = new String(receivePacket.getData(), 0, receivePacket.getLength());
+				System.out.println("Recvd ACK: " + rec);
+				ACK = Integer.parseInt(rec);
 				
-                if(ACK == last_ACK)
-                {
+				if(ACK == flow)
+				{
+					break;
+				}
+				
+				
+				if(ACK == last_ACK)
+				{
 					Seq = ACK;
 					W = MSS;
 				}
 				else //if(ACK > Seq - W)
-                {
+				{
 					w_send = ACK - Seq;
-                    System.out.println(w_send + " " + ACK + " " + Seq + " " + w_send_copy);
+					System.out.println(w_send + " " + ACK + " " + Seq + " " + w_send_copy);
 					tmp = W;
 					W+= (MSS*MSS)/tmp;
 				}
 				last_ACK = ACK;
-                
-            } catch (SocketTimeoutException e) {
-                // time expired
-                Seq = last_ACK;
-                
-                W = MSS;
-            }
+				
+			} catch (SocketTimeoutException e) {
+				// time expired
+				Seq = last_ACK;
+				W = MSS;
+				System.out.println("Catch out");
+			}
+			
+			
+			boolean break_outer = false;
 
+			clientSocket.setSoTimeout(1);//1s timeout
+
+			while(true)
+			{
+				try {
+					clientSocket.receive(receivePacket);
+					String rec = new String(receivePacket.getData(), 0, receivePacket.getLength());
+					System.out.println("Recvd ACK _ in: " + rec);
+					ACK = Integer.parseInt(rec);
+					
+					if(ACK == flow)
+					{
+						System.out.println("Break outer");
+						break_outer = true;
+						break;
+					}
+					
+					
+					if(ACK == last_ACK)
+					{
+						Seq = ACK;
+						W = MSS;
+					}
+					else //if(ACK > Seq - W)
+					{
+						w_send = ACK - Seq;
+						System.out.println(w_send + " " + ACK + " " + Seq + " " + w_send_copy + " fefwfewfwefwwfwef");
+						tmp = W;
+						W+= (MSS*MSS)/tmp;
+					}
+					last_ACK = ACK;
+					
+				} catch (SocketTimeoutException e) {
+					// time expired
+					
+					System.out.println("Catch in");
+					//Seq = last_ACK;
+					//W = MSS;
+					break;
+				}
+			}
+			if(break_outer)
+			{
+				break;
+			}
         }
 
         clientSocket.close();
