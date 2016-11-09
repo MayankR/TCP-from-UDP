@@ -35,31 +35,34 @@ public class sender {
 
 		int w_send = 0;
 	
-        while(Seq != flow){
-			w_send += W;
-			int w_send_copy = w_send;
-			while(w_send > 0)
+        while(true){
+			if(Seq <= flow)
 			{
-				sequ = zero12.substring(0,12-(Seq+"").length())+Seq;
+				w_send += W;
+				w_send = min(w_send, flow - Seq + 1);
+				int w_send_copy = w_send;
+				while(w_send > 0)
+				{
+					sequ = zero12.substring(0,12-(Seq+"").length())+Seq;
+					
+					packetSize = Math.min(MSS, w_send);
+					
+					PS = zero12.substring(0,12-(packetSize+"").length())+packetSize;
+					sentence = sequ+PS+by1000.substring(0,1000);
 				
-				packetSize = Math.min(MSS, w_send);
-				
-				PS = zero12.substring(0,12-(packetSize+"").length())+packetSize;
-				sentence = sequ+PS+by1000.substring(0,1000);
-			
-				sendData = sentence.getBytes();
-				int sendSizeByte = sendData.length;
+					sendData = sentence.getBytes();
+					int sendSizeByte = sendData.length;
 
-				DatagramPacket sendPacket = new DatagramPacket(sendData, sendSizeByte, ipAddress, Integer.parseInt(port));
-				clientSocket.send(sendPacket);
-				
-				
-				
-				w_send -= packetSize ;	//todo
-				Seq += packetSize;		//todo
+					DatagramPacket sendPacket = new DatagramPacket(sendData, sendSizeByte, ipAddress, Integer.parseInt(port));
+					clientSocket.send(sendPacket);
+					
+					
+					
+					w_send -= packetSize ;	//todo
+					Seq += packetSize;		//todo
+				}
+				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			}
-            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-
 			w_send = 0;
 
             try {
@@ -67,6 +70,10 @@ public class sender {
                 String rec = new String(receivePacket.getData(), 0, receivePacket.getLength());
                 System.out.println(rec);
                 ACK = Integer.parseInt(rec);
+                
+                if(ACK == flow)
+					break;
+                
                 if(ACK <= Seq - w_send_copy)
                 {
 					Seq = ACK;
