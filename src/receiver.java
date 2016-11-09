@@ -5,6 +5,7 @@ import java.net.InetAddress;
 
 /**
  * Created by ashleyjain on 06/11/16.
+ * Contributors: Ashley Jain, Prakhar Gupta, Mayank Rajoria
  */
 public class receiver {
 
@@ -13,10 +14,11 @@ public class receiver {
         DatagramSocket serverSocket = new DatagramSocket(9876);
         byte[] receiveData = new byte[1024];
         byte[] sendData;
-        String send;
-        int ACK = 0;
-        int seq = 0;
-        int rseq =0;
+        String sendString;
+        int rPacketSize = 0;
+        int nextSeq = 0;
+        int rSeq = 0;
+        int ack = 0;
 
         while(true) {
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
@@ -25,21 +27,23 @@ public class receiver {
             String rec = new String(receivePacket.getData());
             System.out.println(rec);
 
-            rseq = Integer.parseInt(rec.substring(0,12));
+            rSeq = Integer.parseInt(rec.substring(0,12));           //Packet seq number -> start bit
 
-            if(rseq==seq){
-                ACK = Integer.parseInt(rec.substring(12,24));
-                seq+= ACK;
-                System.out.println(ACK+"");
-                InetAddress IPAddress = receivePacket.getAddress();
-                int port = receivePacket.getPort();
-
-                send = ACK+"";
-                sendData = send.getBytes();
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-                serverSocket.send(sendPacket);
+            if(rSeq==nextSeq){
+                rPacketSize = Integer.parseInt(rec.substring(12,24));       //Packet size
+                nextSeq += rPacketSize;
+                ack = nextSeq;
             }
 
+            System.out.println(ack+"");
+
+            InetAddress IPAddress = receivePacket.getAddress();
+            int port = receivePacket.getPort();
+            
+            sendString = ack + "";
+            sendData = sendString.getBytes();
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+            serverSocket.send(sendPacket);
 
         }
 
