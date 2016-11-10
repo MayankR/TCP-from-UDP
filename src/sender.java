@@ -63,7 +63,7 @@ public class sender {
 				w_send = Math.min(w_send, flow - Seq);
 				w_send_copy = w_send;
                 //System.out.println("W: " + W + "; Seq: " + Seq + "; Total senging: " + w_send);
-				while(w_send > 0)
+				while(w_send/MSS != 0)
 				{
 					sequ = zero12.substring(0,12-(Seq+"").length())+Seq;
 					
