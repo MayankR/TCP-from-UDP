@@ -1,0 +1,27 @@
+COMPILING
+--------------------------------------------------------------
+
+Either use the Makefile :
+
+	make
+
+Or you can compile the reciver.java and sender.java files individually by :
+	
+	javac sender.java
+	javac receiver.java
+
+
+RUNNING
+--------------------------------------------------------------
+
+Sender :
+	
+	java sender [-l <loss parameter>] <receiver_ip>
+
+if loss parameter = 1, then each packet is dropped at the sender itself with probability 0.05
+if loss parameter = 0, then each packet is dropped at the sender itself with probability 0
+
+
+Receiver :
+
+	java receiver
