@@ -114,6 +114,7 @@ public class sender {
 				{
 					Seq = ACK;
 					W = MSS;
+					w_send = 0;
 				}
 				else //if(ACK > Seq - W)
 				{
@@ -129,6 +130,7 @@ public class sender {
 				// time expired
 				Seq = last_ACK;
 				W = MSS;
+				w_send = 0;
 				//System.out.println("Catch out");
 			}
 			
@@ -160,6 +162,7 @@ public class sender {
 					{
 						Seq = ACK;
 						W = MSS;
+						w_send = 0;
 					}
 					else //if(ACK > Seq - W)
 					{
