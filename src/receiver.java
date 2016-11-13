@@ -13,12 +13,17 @@ public class receiver {
 
         DatagramSocket serverSocket = new DatagramSocket(9876);
         byte[] receiveData = new byte[1024];
+        boolean[] gotData = new boolean[100005];
         byte[] sendData;
         String sendString;
         int rPacketSize = 0;
         int nextSeq = 0;
         int rSeq = 0;
         int ack = 0;
+
+        for(int i=0;i<100005;i++) {
+            gotData[i]=false;
+        }
 
         int count = 0;
         while(true) {
@@ -33,10 +38,17 @@ public class receiver {
             System.out.println("Received data: " + rec);
 
             rSeq = Integer.parseInt(rec.substring(0,12));           //Packet seq number -> start bit
+            rPacketSize = Integer.parseInt(rec.substring(12,24));       //Packet size
+
+            for(int i=rSeq;i<rSeq+rPacketSize;i++) {
+                gotData[i]=true;
+            }
 
             if(rSeq==nextSeq){
-                rPacketSize = Integer.parseInt(rec.substring(12,24));       //Packet size
                 nextSeq += rPacketSize;
+                while(gotData[nextSeq]) {
+                    nextSeq++;
+                }
                 ack = nextSeq;
             }
 
