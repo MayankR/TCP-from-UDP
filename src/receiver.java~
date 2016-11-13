@@ -35,7 +35,7 @@ public class receiver {
             // System.out.print(rec.substring(0, 24) + "  ");
             // System.out.print("count: "  + count + " ");
 
-            System.out.println("Received data: " + rec.substring(0,50));
+            System.out.println("Received data: " + rec.substring(0,50);
 
             rSeq = Integer.parseInt(rec.substring(0,12));           //Packet seq number -> start bit
             rPacketSize = Integer.parseInt(rec.substring(12,24));       //Packet size
